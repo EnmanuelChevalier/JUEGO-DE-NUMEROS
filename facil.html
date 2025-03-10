@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modo Fácil</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Lobster&display=swap");
+
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #2e8b57;
+        text-align: center;
+        color: white;
+      }
+
+      h1 {
+        font-family: "Lobster", cursive;
+        font-size: 48px;
+        text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3);
+        color: #ffd700;
+        margin-bottom: 20px;
+      }
+
+      .carta {
+        background: white;
+        color: black;
+        width: 200px;
+        height: 300px;
+        margin: 20px auto;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+        border: 5px solid red;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-family: "Georgia", serif;
+        position: relative;
+      }
+
+      .carta.voltear {
+        transform: rotateY(180deg);
+      }
+
+      .carta::before {
+        content: "\2665"; /* Corazón de cartas */
+        font-size: 40px;
+        color: red;
+        position: absolute;
+        top: 10px;
+        left: 10px;
+      }
+
+      .carta::after {
+        content: "\2665";
+        font-size: 40px;
+        color: red;
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        transform: rotate(180deg);
+      }
+
+      .carta h1 {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+
+      .carta p {
+        font-size: 18px;
+      }
+
+      input,
+      button {
+        margin-top: 10px;
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: none;
+      }
+
+      button {
+        background: #ffd700;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #ffc107;
+      }
+
+      .boton-volver {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        padding: 10px 20px;
+        font-size: 18px;
+        background: #dc143c;
+        color: white;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.3s;
+      }
+
+      .boton-volver:hover {
+        background: #b22222;
+        transform: scale(1.1);
+      }
+    </style>
+  </head>
+  <body>
+    <button class="boton-volver" onclick="window.location.href='index.html';">Volver</button>
+    <h1>Modo Fácil</h1>
+    <div class="carta" id="carta">
+      <h1 id="nivelTexto"></h1>
+      <p id="rangoTexto"></p>
+      <p id="mensaje"></p>
+      <input type="number" id="entradaNumero" placeholder="Ingresa un número" />
+      <p id="puntuacionTexto">Puntuación: 0</p>
+      <button onclick="verificarNumeroFacil(); voltearCarta();">Verificar</button>
+    </div>
+
+    <script>
+      let nivel = 1;
+      let min = 1;
+      let max = 5;
+      let numeroSecreto;
+      let intentos = 3;
+      let puntos = 0;
+      let numeroAnterior = null;
+
+      function voltearCarta() {
+        const carta = document.getElementById("carta");
+        carta.classList.add("voltear");
+        setTimeout(() => carta.classList.remove("voltear"), 600);
+      }
+
+      function iniciarJuegoFacil() {
+        nivel = 1;
+        min = 1;
+        max = 5;
+        intentos = 3;
+        puntos = 0;
+        numeroAnterior = null;
+        generarNuevoNumeroFacil();
+        actualizarInterfaz();
+      }
+
+      function generarNuevoNumeroFacil() {
+        numeroSecreto = Math.floor(Math.random() * (max - min + 1)) + min;
+        document.getElementById("rangoTexto").innerText = `Adivina el número del ${min} al ${max}`;
+      }
+
+      function verificarNumeroFacil() {
+        let numeroUsuario = parseInt(document.getElementById("entradaNumero").value);
+
+        if (numeroUsuario === numeroSecreto) {
+          if (intentos === 3) {
+            puntos += 100;
+          } else if (intentos === 2) {
+            puntos += 50;
+          } else if (intentos === 1) {
+            puntos += 25;
+          }
+
+          document.getElementById("mensaje").innerHTML = "✅ ¡Correcto! Pasas al siguiente nivel.";
+
+          if (nivel > 1 && Math.random() < 0.5) {
+            // 50% de probabilidad de que se pida el número anterior
+            pedirNumeroAnterior();
+          } else {
+            siguienteNivelFacil();
+          }
+        } else {
+          intentos--;
+          if (intentos === 0) {
+            document.getElementById(
+              "mensaje"
+            ).innerHTML = `❌ Has fallado. El número era ${numeroSecreto}.`;
+            reiniciarJuego();
+          } else {
+            document.getElementById(
+              "mensaje"
+            ).innerHTML = `❌ Incorrecto. Te quedan ${intentos} intentos.`;
+          }
+        }
+      }
+
+      function pedirNumeroAnterior() {
+        let numeroUsuario = prompt(`¿A dónde vas? ¿Recuerdas el número del nivel ${nivel - 1}?`);
+        if (parseInt(numeroUsuario) === numeroAnterior) {
+          alert("✅ ¡Correcto! Puedes seguir.");
+          siguienteNivelFacil();
+        } else {
+          alert("❌ ¡Incorrecto! El juego se reinicia.");
+          reiniciarJuego();
+        }
+      }
+
+      function siguienteNivelFacil() {
+        numeroAnterior = numeroSecreto; // Guardar el número anterior
+        nivel++;
+        min += 5;
+        max += 5;
+        intentos = 3;
+        generarNuevoNumeroFacil();
+        actualizarInterfaz();
+      }
+
+      function actualizarInterfaz() {
+        document.getElementById("nivelTexto").innerText = `Nivel ${nivel}`;
+        document.getElementById("entradaNumero").value = "";
+        document.getElementById("puntuacionTexto").innerText = `Puntuación: ${puntos}`;
+      }
+
+      function reiniciarJuego() {
+        alert("Fin del juego. Se reiniciará.");
+        iniciarJuegoFacil();
+      }
+
+      window.onload = iniciarJuegoFacil;
+    </script>
+  </body>
+</html>
